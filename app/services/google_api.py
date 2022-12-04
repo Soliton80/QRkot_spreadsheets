@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-from typing import List
+from datetime import datetime
 
 from aiogoogle import Aiogoogle
 from app.core.config import settings
@@ -83,4 +82,3 @@ async def spreadsheets_update_value(
             json=update_body
         )
     )
-    

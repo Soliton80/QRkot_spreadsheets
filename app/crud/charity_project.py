@@ -41,7 +41,6 @@ class CRUDCharityProject(CRUDBase):
                 'time_delta': str(elem.close_date - elem.create_date),
                 'description': elem.description})
         return sorted(result, key=lambda x: x['time_delta'])
-    
 
 
 project_crud = CRUDCharityProject(CharityProject)
