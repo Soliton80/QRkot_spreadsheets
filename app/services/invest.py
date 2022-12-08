@@ -1,13 +1,11 @@
 from datetime import datetime
-from typing import List, Type, TypeVar, Union
+from typing import Union
 
-from sqlalchemy import false, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import CharityProject, Donation
 
 from app.crud.base import CRUDBase
-
 
 
 async def close(obj: Union[CharityProject, Donation]) -> None:
@@ -19,12 +17,14 @@ async def close(obj: Union[CharityProject, Donation]) -> None:
 async def invest(
     obj: Union[CharityProject, Donation],
     session: AsyncSession,
-) -> None:
+):
     """Distribute donations to open projects."""
-    MODELS = (CharityProject, Donation)
-
-    model = MODELS[isinstance(obj, CharityProject)]
-    open_objs = await CRUDBase.get_all_open(model, session)
+    open_objs = await CRUDBase.get_all_open(
+        CharityProject if isinstance(obj, Donation) else Donation,
+        session
+    )
+    if not open_objs:
+        return None
     if open_objs:
         amount_to_invest = obj.full_amount
         for open_obj in open_objs:

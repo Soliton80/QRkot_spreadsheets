@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import List
 
 from aiogoogle import Aiogoogle
 from fastapi import APIRouter, Depends
@@ -23,8 +23,6 @@ FORMAT = '%Y/%m/%d %H:%M:%S'
     response_model=List[CharityProjectDB],
     dependencies=[Depends(current_superuser)],
 )
-
-
 async def get_report(
         session: AsyncSession = Depends(get_async_session),
         wrapper_services: Aiogoogle = Depends(get_service)
@@ -37,5 +35,4 @@ async def get_report(
     spreadsheet_id = await spreadsheets_create(wrapper_services, now_date_time)
     await set_user_permissions(spreadsheet_id, wrapper_services)
     await spreadsheets_update_value(spreadsheet_id, projects, wrapper_services, now_date_time)
-    
     return projects

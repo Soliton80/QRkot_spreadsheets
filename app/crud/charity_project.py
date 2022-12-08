@@ -7,8 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .base import CRUDBase
 from app.models.charity_project import CharityProject
 
+
 class CRUDCharityProject(CRUDBase):
-    
+
     async def get_project_id_by_name(
         self,
         project_name: str,
@@ -27,9 +28,7 @@ class CRUDCharityProject(CRUDBase):
     ):
         projects = await session.execute(
             select(CharityProject).where(
-                CharityProject.fully_invested
-                )
-            )
+                CharityProject.fully_invested))
         projects = projects.scalars().all()
         return projects
 
