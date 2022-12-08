@@ -1,11 +1,12 @@
-from typing import Optional
+from typing import List, Type, Union, TypeVar, Optional
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select
+from sqlalchemy import select, false, asc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import User
+from app.models import CharityProject, Donation
 
+from app.models import User
 
 class CRUDBase:
 
@@ -30,7 +31,10 @@ class CRUDBase:
     ):
         db_objs = await session.execute(select(self.model))
         return db_objs.scalars().all()
+    
 
+    
+    
     async def create(
             self,
             obj_in,
@@ -74,3 +78,10 @@ class CRUDBase:
         await session.delete(db_obj)
         await session.commit()
         return db_obj
+    
+    async def get_all_open(self, session: AsyncSession):
+        obj = await session.execute(
+            select(self).where(~self.fully_invested)
+        )
+        return obj.scalars().all()
+    

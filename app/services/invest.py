@@ -6,27 +6,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import CharityProject, Donation
 
-ModelType = TypeVar('ModelType', CharityProject, Donation)
+from app.crud.base import CRUDBase
+
 
 
 async def close(obj: Union[CharityProject, Donation]) -> None:
     """Close the project or donation."""
     obj.fully_invested = True
     obj.close_date = datetime.now()
-
-
-async def get_all_open(
-    model: Type[ModelType],
-    session: AsyncSession,
-) -> List[Union[CharityProject, Donation]]:
-    """Get all open projects or donations."""
-    open_objs = await session.execute(
-        select(model).where(
-            model.fully_invested == false()
-        ).order_by(model.create_date)
-    )
-    open_objs = open_objs.scalars().all()
-    return open_objs
 
 
 async def invest(
@@ -37,7 +24,7 @@ async def invest(
     MODELS = (CharityProject, Donation)
 
     model = MODELS[isinstance(obj, CharityProject)]
-    open_objs = await get_all_open(model, session)
+    open_objs = await CRUDBase.get_all_open(model, session)
     if open_objs:
         amount_to_invest = obj.full_amount
         for open_obj in open_objs:

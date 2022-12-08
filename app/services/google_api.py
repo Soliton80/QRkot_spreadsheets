@@ -1,36 +1,59 @@
+from http import HTTPStatus
+import copy
 from datetime import datetime
 
+from fastapi import HTTPException
 from aiogoogle import Aiogoogle
 from app.core.config import settings
+from typing import Dict
 
-FORMAT = '%Y/%m/%d %H:%M:%S'
+
+TITLE = 'Отчет на {}'
+ROW = 100
+COLUMN = 11
+
+SPREADSHEET_BODY = dict(
+    properties=dict(
+        locale='ru_RU',
+    ),
+    sheets=[dict(properties=dict(
+        sheetType='GRID',
+        sheetId=0,
+        title='Лист1',
+        gridProperties=dict(
+            rowCount=ROW,
+            columnCount=COLUMN,
+        )
+    ))]
+)
+HEADER = [
+    ['Отчет от', ''],
+    ['Топ проектов по скорости закрытия'],
+    ['Название проекта', 'Время сбора', 'Описание']
+]
+
+SPREADSHEET_CREATE_ERROR = (
+    'Количество передаваемых данных не помещается в таблице. '
+    'Вы передаете {my_row} строк {my_column} столбцов. '
+    'Размер таблицы: {row} строк {column} столбцов.'
+)
 
 
-async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
-    now_date_time = datetime.now().strftime(FORMAT)
+async def spreadsheets_create(
+    wrapper_services: Aiogoogle,
+    now_date_time : datetime,
+    spreadsheet_body: Dict = None,) -> str:
     service = await wrapper_services.discover('sheets', 'v4')
-    spreadsheet_body = {
-        'properties': {
-            'title': f'Отчёт от {now_date_time}',
-            'locale': 'ru_RU'
-        },
-        'sheets': [{
-            'properties': {
-                'sheetType': 'GRID',
-                'sheetId': 0,
-                'title': 'Лист1',
-                'gridProperties': {
-                    'rowCount': 100,
-                    'columnCount': 11
-                }
-            }
-        }]
-    }
+    spreadsheet_body = (
+        copy.deepcopy(SPREADSHEET_BODY) if spreadsheet_body
+        is None else spreadsheet_body
+        )
+    spreadsheet_body['properties']['title'] = TITLE.format(str(now_date_time))
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
     )
-    spreadsheetid = response['spreadsheetId']
-    return spreadsheetid
+    spreadsheet_id = response['spreadsheetId']
+    return spreadsheet_id
 
 
 async def set_user_permissions(
@@ -51,34 +74,45 @@ async def set_user_permissions(
 
 
 async def spreadsheets_update_value(
-        spreadsheetid: str,
+        spreadsheet_id: str,
         projects: list,
-        wrapper_services: Aiogoogle
+        wrapper_services: Aiogoogle,
+        now_date_time: datetime,
 ) -> None:
     service = await wrapper_services.discover(
         'sheets',
         'v4'
     )
+    projects_fields = sorted((
+        (
+            project.name,
+            project.close_date - project.create_date,
+            project.description
+        ) for project in projects
+    ), key=lambda x: x[1])
+    header = copy.deepcopy(HEADER)
+    header[0][1] = str(now_date_time)
     table_values = [
-        ['Отчет от', datetime.now().strftime(FORMAT)],
-        ['Топ проектов по скорости закрытия'],
-        ['Название проекта', 'Время сбора', 'Описание']]
-    for elem in projects:
-        new_row = [
-            elem['name'],
-            elem['time_delta'],
-            elem['description']
-        ]
-        table_values.append(new_row)
-    update_body = {
-        'majorDimension': 'ROWS',
-        'values': table_values
-    }
+        *header,
+        *[list(map(str, field)) for field in projects_fields],
+    ]
+    my_row, my_column = len(table_values), max(len(table) for table in header)
+    if my_row > ROW or my_column > COLUMN:
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
+            detail=SPREADSHEET_CREATE_ERROR.format(
+                my_row=my_row, my_column=my_column,
+                row=ROW, column=COLUMN
+            ),
+        )
+        
     await wrapper_services.as_service_account(
         service.spreadsheets.values.update(
-            spreadsheetId=spreadsheetid,
-            range='A1:E30',
+            spreadsheetId=spreadsheet_id,
+            range=f'R1C1:R{ROW}C{COLUMN}',
             valueInputOption='USER_ENTERED',
-            json=update_body
+            json={
+                'majorDimension': 'ROWS',
+                'values': table_values
+            }
         )
     )
