@@ -96,12 +96,12 @@ async def spreadsheets_update_value(
         *header,
         *[list(map(str, field)) for field in projects_fields],
     ]
-    my_row, my_column = len(table_values), max(len(table) for table in header)
-    if my_row > ROW or my_column > COLUMN:
+    row, column = len(table_values), max(len(i) for i in header)
+    if row > ROW or column > COLUMN:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=SPREADSHEET_CREATE_ERROR.format(
-                my_row=my_row, my_column=my_column,
+                my_row=row, my_column=column,
                 row=ROW, column=COLUMN),
         )
 

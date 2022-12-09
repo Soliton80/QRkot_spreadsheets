@@ -1,15 +1,19 @@
-from typing import Optional
+from typing import Any, Generic, List, Type, TypeVar, Union, Optional
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core import db
+
 
 from app.models import User
+
+ModelType = TypeVar('ModelType', bound=db.Base)
 
 
 class CRUDBase:
 
-    def __init__(self, model):
+    def __init__(self, model)-> None:
         self.model = model
 
     async def get_by_attribute(
@@ -17,7 +21,7 @@ class CRUDBase:
         attr_name: str,
         attr_value: str,
         session: AsyncSession,
-    ):
+    )-> Union[None, ModelType]:
         attr = getattr(self.model, attr_name)
         db_obj = await session.execute(
             select(self.model).where(attr == attr_value)
@@ -27,7 +31,7 @@ class CRUDBase:
     async def get_multi(
             self,
             session: AsyncSession
-    ):
+    )-> List[ModelType]:
         db_objs = await session.execute(select(self.model))
         return db_objs.scalars().all()
 
@@ -36,7 +40,7 @@ class CRUDBase:
             obj_in,
             session: AsyncSession,
             user: Optional[User] = None
-    ):
+    )-> ModelType:
         obj_in_data = obj_in.dict()
         if user is not None:
             obj_in_data['user_id'] = user.id
@@ -51,7 +55,7 @@ class CRUDBase:
             db_obj,
             obj_in,
             session: AsyncSession
-    ):
+    )-> ModelType:
         obj_data = jsonable_encoder(db_obj)
         update_data = obj_in.dict(exclude_unset=True)
         for field in obj_data:
@@ -70,7 +74,7 @@ class CRUDBase:
             self,
             db_obj,
             session: AsyncSession
-    ):
+    )-> ModelType:
         await session.delete(db_obj)
         await session.commit()
         return db_obj

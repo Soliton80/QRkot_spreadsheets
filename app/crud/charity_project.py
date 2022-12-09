@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union, List
 
 from sqlalchemy import select
 
@@ -22,10 +22,10 @@ class CRUDCharityProject(CRUDBase):
         db_project_id = db_project_id.scalars().first()
         return db_project_id
 
-    async def get_projects_by_completion_rate(
+    async def get_projects_by_completion(
             self,
             session: AsyncSession
-    ):
+    )-> Union[None, List]:
         projects = await session.execute(
             select(CharityProject).where(
                 CharityProject.fully_invested))

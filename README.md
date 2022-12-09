@@ -24,7 +24,7 @@ Registered users can send donations and view a list of their donations.
 Clone the repository to your computer:
 
 ```
-git@github.com:yandex-praktikum/QRkot_spreadsheets.git
+git@github.com:Soliton80/QRkot_spreadsheets-1.git
 ```
 
 In the root folder, create a virtual environment
@@ -66,13 +66,6 @@ AUTH_PROVIDER_X509_CERT_URL="https://www.googleapis.com/oauth2/v1/certs"
 CLIENT_X509_CERT_URL="https://www.googleapis.com/robot/v1/metadata/x509/service-account%40opportune-lore-369911.iam.gserviceaccount.com"
 EMAIL=email@gmail.com
 
-```
-## Connect the database, make migrations.
-
-```
-alembic init
-alembic revision --autogenerate 
-alembic upgrade head
 ```
 ## Create superuser.
 

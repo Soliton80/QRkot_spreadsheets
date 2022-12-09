@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List
 
 from aiogoogle import Aiogoogle
@@ -28,11 +27,10 @@ async def get_report(
         wrapper_services: Aiogoogle = Depends(get_service)
 ):
     """For superusers only."""
-    projects = await project_crud.get_projects_by_completion_rate(
+    projects = await project_crud.get_projects_by_completion(
         session
     )
-    now_date_time = datetime.now().strftime(FORMAT)
-    spreadsheet_id = await spreadsheets_create(wrapper_services, now_date_time)
+    spreadsheet_id = await spreadsheets_create(wrapper_services)
     await set_user_permissions(spreadsheet_id, wrapper_services)
-    await spreadsheets_update_value(spreadsheet_id, projects, wrapper_services, now_date_time)
+    await spreadsheets_update_value(spreadsheet_id, projects, wrapper_services)
     return projects
