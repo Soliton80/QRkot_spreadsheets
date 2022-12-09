@@ -41,13 +41,13 @@ SPREADSHEET_CREATE_ERROR = (
 
 async def spreadsheets_create(
     wrapper_services: Aiogoogle,
-    now_date_time : datetime,
-    spreadsheet_body: Dict = None,) -> str:
+    now_date_time: datetime,
+    spreadsheet_body: Dict = None,
+) -> str:
     service = await wrapper_services.discover('sheets', 'v4')
     spreadsheet_body = (
         copy.deepcopy(SPREADSHEET_BODY) if spreadsheet_body
-        is None else spreadsheet_body
-        )
+        is None else spreadsheet_body)
     spreadsheet_body['properties']['title'] = TITLE.format(str(now_date_time))
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
@@ -98,13 +98,13 @@ async def spreadsheets_update_value(
     ]
     my_row, my_column = len(table_values), max(len(table) for table in header)
     if my_row > ROW or my_column > COLUMN:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST,
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
             detail=SPREADSHEET_CREATE_ERROR.format(
                 my_row=my_row, my_column=my_column,
-                row=ROW, column=COLUMN
-            ),
+                row=ROW, column=COLUMN),
         )
-        
+
     await wrapper_services.as_service_account(
         service.spreadsheets.values.update(
             spreadsheetId=spreadsheet_id,
