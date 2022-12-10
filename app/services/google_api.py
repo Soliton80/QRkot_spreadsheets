@@ -1,8 +1,6 @@
-from http import HTTPStatus
 import copy
 from datetime import datetime
 
-from fastapi import HTTPException
 from aiogoogle import Aiogoogle
 from app.core.config import settings
 from typing import Dict
@@ -34,7 +32,7 @@ HEADER = [
 
 SPREADSHEET_CREATE_ERROR = (
     'Количество передаваемых данных не помещается в таблице. '
-    'Вы передаете {my_row} строк {my_column} столбцов. '
+    'Вы передаете {in_row} строк {in_column} столбцов. '
     'Размер таблицы: {row} строк {column} столбцов.'
 )
 
@@ -92,16 +90,15 @@ async def spreadsheets_update_value(
     ), key=lambda x: x[1])
     header = copy.deepcopy(HEADER)
     header[0][1] = str(now_date_time)
-    table_values = [
+    data_values = [
         *header,
         *[list(map(str, field)) for field in projects_fields],
     ]
-    row, column = len(table_values), max(len(i) for i in header)
-    if row > ROW or column > COLUMN:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail=SPREADSHEET_CREATE_ERROR.format(
-                my_row=row, my_column=column,
+    in_row, in_column = len(data_values), max(len(i) for i in header)
+    if in_row > ROW or in_column > COLUMN:
+        raise Exception(
+            SPREADSHEET_CREATE_ERROR.format(
+                in_row=in_row, in_column=in_column,
                 row=ROW, column=COLUMN),
         )
 
@@ -112,7 +109,7 @@ async def spreadsheets_update_value(
             valueInputOption='USER_ENTERED',
             json={
                 'majorDimension': 'ROWS',
-                'values': table_values
+                'values': data_values
             }
         )
     )
