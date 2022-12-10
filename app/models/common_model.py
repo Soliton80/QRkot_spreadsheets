@@ -27,4 +27,3 @@ class CommonModel(Base):
         CheckConstraint('full_amount > 0', name='full_amount_positive'),
         CheckConstraint('invested_amount <= full_amount', name='invested_amount <= full_amount')
     )
-    
