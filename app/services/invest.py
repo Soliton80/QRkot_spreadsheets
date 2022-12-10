@@ -24,6 +24,7 @@ async def invest(
         session
     )
     if not open_objs:
+        await session.commit()
         return None
     if open_objs:
         amount_to_invest = obj.full_amount

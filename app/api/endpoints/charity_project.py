@@ -31,7 +31,7 @@ async def create_new_charity_project(
 ):
     """For superusers only. Creating a charitable project"""
     await check_name_duplicate(charity_project.name, session)
-    new_project = await project_crud.create(charity_project, session)
+    new_project = await project_crud.create(charity_project, session) 
     await invest(new_project, session)
     await session.refresh(new_project)
     return new_project

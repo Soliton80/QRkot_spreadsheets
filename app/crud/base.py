@@ -1,7 +1,6 @@
 from typing import Any, Generic, List, Type, TypeVar, Union, Optional
-
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select
+from sqlalchemy import select, Boolean
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import db
 
@@ -35,18 +34,22 @@ class CRUDBase:
         db_objs = await session.execute(select(self.model))
         return db_objs.scalars().all()
 
-    async def create(
-            self,
-            obj_in,
-            session: AsyncSession,
-            user: Optional[User] = None
-    )-> ModelType:
+    
+    async def create( 
+            self, 
+            obj_in, 
+            session: AsyncSession, 
+            user: Optional[User] = None ,
+            commit: Optional[Boolean] = True,
+    )->ModelType:
+
         obj_in_data = obj_in.dict()
         if user is not None:
             obj_in_data['user_id'] = user.id
         db_obj = self.model(**obj_in_data)
         session.add(db_obj)
-        await session.commit()
+        if commit:
+            await session.commit()
         await session.refresh(db_obj)
         return db_obj
 
