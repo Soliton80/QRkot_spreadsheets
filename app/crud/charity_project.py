@@ -1,7 +1,6 @@
-from typing import Optional, Union, List
+from typing import Optional, List
 
 from sqlalchemy import select
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import CRUDBase
@@ -25,7 +24,7 @@ class CRUDCharityProject(CRUDBase):
     async def get_projects_by_completion(
             self,
             session: AsyncSession
-    ) -> Union[None, List]:
+    ) -> Optional[List]:
         projects = await session.execute(
             select(CharityProject).where(
                 CharityProject.fully_invested))

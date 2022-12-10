@@ -2,6 +2,7 @@ import copy
 from datetime import datetime
 
 from aiogoogle import Aiogoogle
+from aiogoogle.excs import ValidationError
 from app.core.config import settings
 from typing import Dict
 
@@ -33,7 +34,7 @@ HEADER = [
 SPREADSHEET_CREATE_ERROR = (
     'Количество передаваемых данных не помещается в таблице. '
     'Вы передаете {in_row} строк {in_column} столбцов. '
-    'Размер таблицы: {row} строк {column} столбцов.'
+    'Размер таблицы: {100} строк {11} столбцов.'
 )
 
 
@@ -90,13 +91,13 @@ async def spreadsheets_update_value(
     ), key=lambda x: x[1])
     header = copy.deepcopy(HEADER)
     header[0][1] = str(now_date_time)
-    data_values = [
+    table_values = [
         *header,
         *[list(map(str, field)) for field in projects_fields],
     ]
-    in_row, in_column = len(data_values), max(len(i) for i in header)
-    if in_row > ROW or in_column > COLUMN:
-        raise Exception(
+    in_row, in_column = len(table_values), max(len(i) for i in header)
+    if in_row > 100 or in_column > 11:
+        raise ValidationError(
             SPREADSHEET_CREATE_ERROR.format(
                 in_row=in_row, in_column=in_column,
                 row=ROW, column=COLUMN),
@@ -109,7 +110,7 @@ async def spreadsheets_update_value(
             valueInputOption='USER_ENTERED',
             json={
                 'majorDimension': 'ROWS',
-                'values': data_values
+                'values': table_values
             }
         )
     )

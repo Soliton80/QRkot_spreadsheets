@@ -71,12 +71,19 @@ EMAIL=email@gmail.com
 
 To do this in any database manager, connect to the created database fastapi.db, change the status of the normal user is_superuser = 1
 
+## Apply migrations to create a DB
+
+```
+alembic upgrade head
+```
+
 ## Launch server
 
 ```
 uvicorn app.main:app --reload 
 
 ```
+
 ### Author
 
 - [Sukharev Kirill](https://github.com/Soliton80)

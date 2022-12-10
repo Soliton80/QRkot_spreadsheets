@@ -1,12 +1,14 @@
-from typing import List, TypeVar, Union, Optional
+from typing import List, TypeVar, Optional
+
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select, Boolean
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import db
 
 
 from app.models import User
 #import pdb
+
 
 ModelType = TypeVar('ModelType', bound=db.Base)
 
@@ -21,7 +23,7 @@ class CRUDBase:
         attr_name: str,
         attr_value: str,
         session: AsyncSession,
-    ) -> Union[None, ModelType]:
+    ) -> Optional[ModelType]:
         attr = getattr(self.model, attr_name)
         db_obj = await session.execute(
             select(self.model).where(attr == attr_value)
@@ -39,10 +41,9 @@ class CRUDBase:
             self,
             obj_in,
             session: AsyncSession,
-            user: Optional[User] = None,
-            commit: Optional[Boolean] = True,
+            commit: bool = True,
+            user: Optional[User] = None
     ) -> ModelType:
-
         obj_in_data = obj_in.dict()
         if user is not None:
             obj_in_data['user_id'] = user.id
@@ -83,7 +84,6 @@ class CRUDBase:
         return db_obj
 
     async def get_all_open(self, session: AsyncSession):
-        # pdb.set_trace()
         obj = await session.execute(
             select(self).where(~self.fully_invested)
         )

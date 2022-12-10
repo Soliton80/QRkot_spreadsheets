@@ -15,6 +15,9 @@ from app.schemas.charity_project import (CharityProjectCreate,
                                          CharityProjectDB,
                                          CharityProjectUpdate)
 from app.services.invest import close, invest
+# import pdb;
+# from sqlalchemy import inspect
+
 
 router = APIRouter()
 
@@ -31,13 +34,13 @@ async def create_new_charity_project(
 ):
     """For superusers only. Creating a charitable project"""
     await check_name_duplicate(charity_project.name, session)
-    new_project = await project_crud.create(charity_project, session)
-    #new_project = await project_crud.create(charity_project, session, commit=False) не проходят тесты на площадке
+    new_project = await project_crud.create(charity_project, session, commit=False)
     open_projects = await invest(new_project, session)
     if open_projects:
         session.add_all(open_projects)
     await session.commit()
     await session.refresh(new_project)
+
     return new_project
 
 
@@ -77,7 +80,7 @@ async def partially_update_charity_project(
             obj_in.full_amount, project_id, session
         )
         if to_close_project:
-            await close(charity_project)
+            close(charity_project)
 
     charity_project = await project_crud.update(
         charity_project, obj_in, session

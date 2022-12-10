@@ -3,6 +3,7 @@ from typing import List
 from aiogoogle import Aiogoogle
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from http import HTTPStatus
 
 from app.schemas.charity_project import CharityProjectDB
 from app.core.db import get_async_session
@@ -11,10 +12,9 @@ from app.core.user import current_superuser
 from app.crud.charity_project import project_crud
 from app.services import (set_user_permissions, spreadsheets_create,
                           spreadsheets_update_value)
+from fastapi import HTTPException
 
 router = APIRouter()
-
-FORMAT = '%Y/%m/%d %H:%M:%S'
 
 
 @router.post(
@@ -32,5 +32,11 @@ async def get_report(
     )
     spreadsheet_id = await spreadsheets_create(wrapper_services)
     await set_user_permissions(spreadsheet_id, wrapper_services)
-    await spreadsheets_update_value(spreadsheet_id, projects, wrapper_services)
+    try:
+        await spreadsheets_update_value(spreadsheet_id, projects, wrapper_services)
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=e,
+        )
     return projects
