@@ -25,7 +25,7 @@ class CRUDCharityProject(CRUDBase):
     async def get_projects_by_completion(
             self,
             session: AsyncSession
-    )-> Union[None, List]:
+    ) -> Union[None, List]:
         projects = await session.execute(
             select(CharityProject).where(
                 CharityProject.fully_invested))
