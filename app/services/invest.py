@@ -41,7 +41,7 @@ async def invest(
 
         if open_obj.full_amount == open_obj.invested_amount:
             close(open_obj)
-            modified_objs.append(open_obj)
+        modified_objs.append(open_obj)
 
         if not amount_to_invest:
             close(obj)
