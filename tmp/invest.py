@@ -3,9 +3,8 @@ from typing import Union
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import CharityProject, Donation
-
 from app.crud.base import CRUDBase
+from app.models import CharityProject, Donation
 
 
 def close(obj: Union[CharityProject, Donation]) -> None:
@@ -30,8 +29,7 @@ async def invest(
     closed_objs = []
     for open_obj in open_objs:
         invested_amount = min(
-            open_obj.full_amount - open_obj.invested_amount,
-            amount_to_invest
+            open_obj.full_amount - open_obj.invested_amount, amount_to_invest
         )
         open_obj.invested_amount += invested_amount
         if obj.invested_amount is None:

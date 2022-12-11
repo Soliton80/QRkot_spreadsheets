@@ -24,9 +24,9 @@ async def create_donation(
     user: User = Depends(current_user),
 ):
     new_donation = await donation_crud.create(donation, session, commit=False, user=user)
-    open_projects = await invest(new_donation, session)
-    if open_projects:
-        session.add_all(open_projects)
+    closed_projects = await invest(new_donation, session)
+    if closed_projects:
+        session.add_all(closed_projects)
     await session.commit()
     await session.refresh(new_donation)
     return new_donation

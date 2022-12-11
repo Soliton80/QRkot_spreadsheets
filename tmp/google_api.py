@@ -1,11 +1,11 @@
 import copy
 from datetime import datetime
+from typing import Dict
 
 from aiogoogle import Aiogoogle
 from aiogoogle.excs import ValidationError
-from app.core.config import settings
-from typing import Dict
 
+from app.core.config import settings
 
 TITLE = 'Отчет на {}'
 ROW = 100
@@ -33,7 +33,7 @@ HEADER = [
 
 SPREADSHEET_CREATE_ERROR = (
     'Количество передаваемых данных не помещается в таблице. '
-    'Вы передаете {in_row} строк {in_column} столбцов. '
+    'Вы передаете {my_row} строк {my_column} столбцов. '
     f'Размер таблицы: {ROW} строк {COLUMN} столбцов.'
 )
 
@@ -95,11 +95,11 @@ async def spreadsheets_update_value(
         *header,
         *[list(map(str, field)) for field in projects_fields],
     ]
-    in_row, in_column = len(table_values), max(len(value) for value in header)
-    if in_row > ROW or in_column > COLUMN:
+    row, column = len(table_values), max(len(i) for i in header)
+    if row > ROW or column > COLUMN:
         raise ValidationError(
             SPREADSHEET_CREATE_ERROR.format(
-                in_row=in_row, in_column=in_column),
+                my_row=row, my_column=column),
         )
 
     await wrapper_services.as_service_account(
