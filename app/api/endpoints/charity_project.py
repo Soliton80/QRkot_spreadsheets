@@ -35,9 +35,9 @@ async def create_new_charity_project(
     """For superusers only. Creating a charitable project"""
     await check_name_duplicate(charity_project.name, session)
     new_project = await project_crud.create(charity_project, session, commit=False)
-    donat = await invest(new_project, session)
-    if donat:
-        session.add_all(donat)
+    donats = await invest(new_project, session)
+    if donats:
+        session.add_all(donats)
     await session.commit()
     await session.refresh(new_project)
 

@@ -27,7 +27,7 @@ async def invest(
         return []
 
     amount_to_invest = obj.full_amount
-    closed_objs = []
+    modified_objs = []
     for open_obj in open_objs:
         invested_amount = min(
             open_obj.full_amount - open_obj.invested_amount,
@@ -41,10 +41,10 @@ async def invest(
 
         if open_obj.full_amount == open_obj.invested_amount:
             close(open_obj)
-            closed_objs.append(open_obj)
+            modified_objs.append(open_obj)
 
         if not amount_to_invest:
             close(obj)
             break
 
-    return closed_objs
+    return modified_objs
